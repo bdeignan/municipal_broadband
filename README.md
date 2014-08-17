@@ -4,7 +4,7 @@ Stata code (version 13.1) and data for economic analysis of municipal broadband,
 
 This repo contains the data (.dta), and some .do files which will crunch the numbers.
 
-Main_Point
+Main Point
 -------------------
 The main point of my project is to perform regression analysis, particularly difference-in-differences estimation, to tease out the effect of municipal broadband. This means I treat the cities (or rather Core Based Statistical Areas) that deploy their own fiber networks as the "treatment" group and other cities as the "control" group, conditional on observable characteristics.
 
@@ -20,12 +20,15 @@ you can tease out the effect of the network on some outcome of interest Y:
 Treatment Effect = (E[Y(d=2)|t=1)-E[Y(d=2)|t=0)) - (E[Y(d=1)|t=1)-E[Y(d=1)|t=0))
 ```
 
-Obviously, this analysis requires that the cities be similar in other regards, which is what conditioning on other observable characteristics does, e.g. level of income, demographics, etc. Also, municipal broadband occurs in small to mid-size cities, so my data only includes CBSAs with around 600,000 people or less. Therefore, I can't extrapolate the measured effect to say, New York City.
+The current project differs from this example in that it has 23 periods of observation and 80 treated cities, but the same idea still applies. The analysis requires that the cities be similar in other regards, which is what conditioning on other observable characteristics does, e.g. level of income, demographics, etc. Also, municipal broadband occurs in small to mid-size cities, so my data only includes CBSAs with around 600,000 people or less. Therefore, I can't extrapolate the measured effect to say, New York City. For more details on this approach, and modern econometrics in general, check out "Mostly Harmless Econometrics," an invaluable book from economists Angrist and Pischke (http://press.princeton.edu/titles/8769.html).
 
 Guide to files
 -------------------
-"communitybroadband.dta" contains the data
-"summarystats.do" has commands for summary statistics. Then you can run regression analysis in this order: "analysis_establishments.do" then "analysis_compensation.do" because the first .do file generates some indicator variables you may need.
+The file "communitybroadband.dta" contains the data in one Stata spreadsheet, "summarystats.do" has commands for summary statistics.
+
+Then you can run regression analysis in this order: "analysis_establishments.do" then "analysis_compensation.do" because the analysis of business establishments generates some indicator variables you may need for the compensation .do file.
+
+There is a lot of data and plenty of regressions and other options to try, so feel free to play around with the data.
 
 User-written programs
 ---------------------
@@ -36,4 +39,3 @@ ssc install carryforward
 ssc install coefplot
 ssc install outreg2
 ```
-
