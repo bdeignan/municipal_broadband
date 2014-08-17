@@ -1,5 +1,6 @@
 *Analysis of Compensation created by municipal broadband
 *Using Ordinary Least Squares (OLS) and Difference-in-Differences Estimation
+
 /* Very Similar to Analysis of establishments, will use natural logarithmic transformations of
 outcomes of interest instead of the raw figures 
 Main finding is that public network deployment DECREASES worker pay (proxied by Compensation per Job) */
@@ -22,13 +23,16 @@ xtreg logrealcomp_pj network unrate edu_bachelors whitepop workage i.year, fe r
 outreg2 network unrate edu_bachelors whitepop workage using /* C:\directory\table */, word append addtext(CBSA FE, Yes, Year FE, Yes)
 
 
-*Interesting to slice up data into 4 subsamples, the highest and lowest quartiles of income
-*and educational attainment in 2010 (creates 4 groups, or subsamples of CBSAs to run regressions on)
+/*Interesting to slice up data into 4 subsamples, the highest and lowest quartiles of income
+and educational attainment in 2010 (creates 4 groups, or subsamples of CBSAs to run regressions on) */
 sum realincome_pc edu_bachelors if year==2010, detail
+
 /*From summary statistics, highest income quartile>=$36464, lowest<=$29770
 Highest educational attainment quartile>=23.84% of people aged 25 or older with a bachelor's degree or higher, lowest<=14.8%
 Now: this is how I generated dummary variables to specify in regression via "if" statements, but the dummy variables are already 
 included in the dataset */
+
+*High and low income indicators
 gen high_inc=1 if realincome_pc>=36464 & year==2010
 gsort cbsa -year
 by cbsa: carryforward high_inc, replace
@@ -41,6 +45,7 @@ by cbsa: carryforward low_inc, replace
 sort cbsa year
 by cbsa: carryforward low_inc, replace
 replace low_inc=0 if low_inc==.
+
 *High and low education indicators
 gen high_edu=1 if realincome_pc>=23.84 & year==2010
 gsort cbsa -year
@@ -80,6 +85,10 @@ outreg2 network unrate edu_bachelors whitepop workage using /* C:\directory\tabl
 	;
 /* Note that you should highlight and execute the entire command when you change delimiter to ";" unless you execute entire .do file
 Coefficient plot shows that compensation per job is negatively affected by municipal broadband especially in richer and highly education CBSAs */
+
+/* Return the delimiter to a carriage return instead of semi-colon */
+#delimit cr
+
 
 *You can also do the long-run analysis as in the analysis of establishments
 *Difference-in-differences with long-run treatment variables -- see establishments .do file if you haven't created long-run dummy variables
