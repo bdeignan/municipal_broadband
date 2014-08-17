@@ -4,7 +4,7 @@ Stata code (version 13.1) and data for economic analysis of municipal broadband,
 
 This repo contains the data (.dta), and some .do files which will crunch the numbers.
 
-Main_Point
+Main Point
 -------------------
 The main point of my project is to perform regression analysis, particularly difference-in-differences estimation, to tease out the effect of municipal broadband. This means I treat the cities (or rather Core Based Statistical Areas) that deploy their own fiber networks as the "treatment" group and other cities as the "control" group, conditional on observable characteristics.
 
