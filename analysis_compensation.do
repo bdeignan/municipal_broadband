@@ -91,9 +91,10 @@ Coefficient plot shows that compensation per job is negatively affected by munic
 
 
 *You can also do the long-run analysis as in the analysis of establishments
-*Difference-in-differences with long-run treatment variables -- see establishments .do file if you haven't created long-run dummy variables
+/*Difference-in-differences with long-run treatment variables -- see establishments .do file
+if you haven't created long-run dummy variables, drop "edu_bachelors" from analysis because of limited observations */
 xi i.network_years i.year
-xtreg logrealcomp_pj _I* unrate edu_bachelors whitepop workage, fe robust
+xtreg logrealcomp_pj _I* unrate itaxratio whitepop workage, fe robust
 /*Note that reported treatment effect coefficients are relative to the omitted "network_years" dummy for -99
 which means that the coefficients can be read as "effect in Year X to Y relative to not deploying a network" */
 
