@@ -10,13 +10,14 @@ I mapped networks to Core Based Statistical Areas, 2013 geographical delineation
 ssc install estout
 ssc install carryforward
 ssc install coefplot
-ssc install outreg2
+/* ssc install outreg2, not used in these files but useful for creating and appending regression results to a single
+table */
 
 *Read data notes
 notes list
 
 *Summary Statistics
-*to improve readability -- change command delimiter to ";", then back to carriage return
+*to improve readability of code -- change command delimiter to ";", then back to carriage return
 #delimit ;
 tabstat network establishments realcomp_pj realcomp_pj_info realcomp_pj_finance realcomp_pj_health 
 	realcomp_pj_manufact realcomp_pj_food realcomp_pj_locgovt employment employment_locgovt 
@@ -26,7 +27,7 @@ tabstat network establishments realcomp_pj realcomp_pj_info realcomp_pj_finance 
 	;
 
 *export summary statistics to Excel file if you want
-estout r(StatTotal, t) using *C:\directory\filename.xls, replace;
+estout r(StatTotal, t) using /*C:\directory\filename.xls*/, replace;
 
 *Examine outcomes of interest by CBSAs with and without public networks in 2012
 sort mnet year;
