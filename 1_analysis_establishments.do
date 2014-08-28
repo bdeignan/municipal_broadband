@@ -1,5 +1,6 @@
 *Analysis of Business Establishments created by municipal broadband
 *Using Ordinary Least Squares (OLS) and Difference-in-Differences Estimation
+*open up .dta file from this repo
 
 sort cbsa year
 
@@ -38,7 +39,8 @@ estimates store HighIncome
 xtreg logestablishments network unrate whitepop workage realincome_pc ptaxratio energycost_state i.year if belowmed_inc==1, fe robust
 estimates store LowIncome
 /* Regression results show that richer half of CBSAs experience almost 4 percent increase in businesses
-while poorer half of cities do not experience a statistically significant effect (beyond the 10 percent level) */
+while poorer half of cities do not experience a statistically significant effect (beyond the 10 percent level).*/
+
 
 
 /* Since public networks are public works projects, they deploy slowly over time, taking many years to complete.
@@ -56,5 +58,10 @@ recode network_years (0=-99) (1 2 =1) (3 4 =3) (5 6 =5) (7 8 =7) (9 10 =9) (11 1
 *Difference-in-differences with long-run treatment variables
 xi i.network_years i.year
 xtreg logestablishments _I* unrate whitepop workage realincome_pc ptaxratio energycost_state, fe robust
+estimates store LongRun
 /*Note that reported treatment effect coefficients are relative to the omitted "network_years" dummy for -99
-which means that the coefficients can be read as "effect in Year X to Y relative to not deploying a network" */
+which means that the coefficients can be read as "effect in Year X to Y relative to not deploying a network".
+Also, since estimates are stored as "LongRun", you can plot the coefficients to visualize change in effect over
+time using "coefplot." */
+coefplot LongRun, keep(_Inetwork_years*) xline(0)
+*Read coefplot's help file for loads of cool viz features you can add, type command "help coefplot"
