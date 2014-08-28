@@ -24,9 +24,9 @@ The current project differs from this example in that it has 23 periods of obser
 
 Guide to files
 -------------------
-The file "communitybroadband.dta" contains the data in one Stata spreadsheet, "summarystats.do" has commands for summary statistics.
+The file "communitybroadband.dta" contains the data in one Stata spreadsheet, "0_summary_stats.do" has commands for summary statistics.
 
-Then you can run regression analysis in this order: "analysis_establishments.do" then "analysis_compensation.do" because the analysis of business establishments generates some indicator variables you may need for the compensation .do file.
+Then you can run regression analysis in this order: "1_analysis_establishments.do" then "2_analysis_compensation.do" because the analysis of business establishments generates some indicator variables you may need for the compensation .do file.
 
 There is a lot of data and plenty of regressions and other options to try, so feel free to play around with the data.
 
