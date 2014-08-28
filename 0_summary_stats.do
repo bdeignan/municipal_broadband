@@ -13,7 +13,7 @@ ssc install coefplot
 /* ssc install outreg2, not used in these files but useful for creating and appending regression results to a single
 table */
 
-*Read data notes
+*Read data notes in .dta file
 notes list
 
 *Summary Statistics
