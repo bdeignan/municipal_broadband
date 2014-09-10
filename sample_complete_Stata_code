@@ -1,0 +1,361 @@
+/*This file shows sample of complete project steps in Stata from importing data to analyzing it.
+Data comes from BLS and BEA, to run code you should change the directory "cd" in Stata.
+Note: this code doesn't go with .dta file in this repo. Instead this code shows some of the steps
+used to create the master dataset*/
+
+cd R:\MPE
+log using municipal_broadband_analysis, text
+set more off
+
+
+***Compile data into one county-level set
+*County Quarterly Census of Employment and Wages Annual Data
+cd R:\MPE\county
+forval x = 1990/2012 {
+import excel "allhlcn`x'.xls", firstrow clear
+save "R:\MPE\county\qcew\qcew`x'.dta", replace
+}
+
+clear
+cd R:\MPE\county\qcew
+
+forval x = 1990/2012 {
+use "qcew`x'.dta", clear
+drop AnnualAverageStatusCode
+save, replace
+}
+
+clear
+
+use qcew1990.dta
+
+forval x = 1991/2012 {
+append using "qcew`x'.dta"
+save "qcew_1990_`x'.dta", replace
+}
+
+*drop extraneous variables from BLS – only analyzing private business establishments from all industries
+drop if Ownership!="Private" & Industry!="Total, all industries"
+*Clean up data, destring numbers stored as text
+destring Year, replace
+destring AreaCode, replace ignore('U' 'S' 'C')
+drop if AreaType!="County"
+
+*Rename AreaCode “fipsco” which is the County FIPS code
+rename AreaCode fipsco
+rename Year year
+
+*Merge Local Area Unemployment Data
+rename AreaCode fipsco
+rename Year year
+merge m:m fipsco year using R:\MPE\county\LAU\lau90to12.dta
+*Drop some county-equivalent areas in Puerto Rico and undefined areas
+drop if _merge!=3
+save "R:\MPE\county\county_total_1990_2012.dta"
+drop _merge
+*Add Core Based Statistical Area Codes
+merge m:m fipsco using R:\MPE\FIPSlookup\CBSAtoFips_Co.dta
+drop if _merge==2
+save "R:\MPE\county\county_total_1990_2012.dta"
+*Add (merge) educational attainment data
+merge m:m fipsco year using R:\MPE\county\Census\bachelors_co0912.dta
+drop if _merge==2
+drop _merge
+save "R:\MPE\county\county_total_1990_2012.dta"
+*Add demographic infomration on race and population
+merge m:m fipsco year using R:\MPE\county\Census\demo90to12.dta 
+drop if _merge==2
+drop _merge
+
+***Generate “Treatment Variable” which indicates when and where FTTP network deployed
+/*County Municipal Network dummy variable using BBPMag table of 135 deployments
+link here: http://www.bbpmag.com/Features/0513feature-MuniCensus.php 
+Note. “fipsco” is County FIPS Code*/
+gen network=0
+replace network=1 if (fipsco==1081 & year>=2010)
+replace network=1 if (fipsco==1071 & year>=1998)
+replace network=1 if (fipsco==1121 & year>=1997)
+replace network=1 if (fipsco==6037 & year>=2010)
+replace network=1 if (fipsco==6001 & year>=2012)
+replace network=1 if (fipsco==6071 & year>=2005)
+replace network=1 if (fipsco==6037 & year>=2004)
+replace network=1 if (fipsco==8083 & year>=2011)
+replace network=1 if (fipsco==8045 & year>=2002)
+replace network=1 if (fipsco==8123 & year>=2012)
+replace network=1 if (fipsco==9011 & year>=2002)
+replace network=1 if (fipsco==12069 & year>=2001)
+replace network=1 if (fipsco==12111 & year>=2004)
+replace network=1 if (fipsco==12001 & year>=2001)
+replace network=1 if (fipsco==12083 & year>=2010)
+replace network=1 if (fipsco==12039 & year>=2003)
+replace network=1 if (fipsco==12035 & year>=2009)
+replace network=1 if (fipsco==13285 & year>=2000)
+replace network=1 if (fipsco==13313 & year>=2003)
+replace network=1 if (fipsco==13015 & year>=1998)
+replace network=1 if (fipsco==13277 & year>=2007)
+replace network=1 if (fipsco==19097 & year>=2006)
+replace network=1 if (fipsco==19013 & year>=2006)
+replace network=1 if (fipsco==19165 & year>=2010)
+replace network=1 if (fipsco==19181 & year>=2012)
+replace network=1 if (fipsco==19003 & year>=2008 | fipsco==19173 & year>=2008)
+replace network=1 if (fipsco==19041 & year>=2007)
+replace network=1 if (fipsco==16019 & year>=2007)
+replace network=1 if (fipsco==17031 & year>=2012)
+replace network=1 if (fipsco==17119 & year>=2010)
+replace network=1 if (fipsco==17197 & year>=2012 | fipsco==17089 & year>=2012 | fipsco==17043 & year>=2012)
+replace network=1 if (fipsco==17011 & year>=2003)
+replace network=1 if (fipsco==17141 & year>=1998)
+replace network=1 if (fipsco==17195 & year>=2004)
+replace network=1 if (fipsco==17019 & year>=2010)
+replace network=1 if (fipsco==18095 & year>=2009)
+replace network=1 if (fipsco==18033 & year>=2006)
+replace network=1 if (fipsco==18141 & year>=2012)
+replace network=1 if (fipsco==18107 & year>=2006)
+replace network=1 if (fipsco==18039 & year>=2008)
+replace network=1 if (fipsco==18141 & year>=2005)
+replace network=1 if (fipsco==20133 & year>=2005)
+replace network=1 if (fipsco==21121 & year>=2010)
+replace network=1 if (fipsco==21227 & year>=2007)
+replace network=1 if (fipsco==21081 & year>=2010 | fipsco==21097 & year>=2010 | fipsco==21209 & year>=2010)
+replace network=1 if (fipsco==21231 & year>=2009)
+replace network=1 if (fipsco==21073 & year>=2009)
+replace network=1 if (fipsco==21047 & year>=1999)
+replace network=1 if (fipsco==21035 & year>=2000)
+replace network=1 if (fipsco==21145 & year>=2004)
+replace network=1 if (fipsco==21141 & year>=2010)
+replace network=1 if (fipsco==51195 & year>=2004 | fipsco==51169 & year>=2004 | fipsco==51105 & year>=2004)
+replace network=1 if (fipsco==22055 & year>=2007)
+replace network=1 if (fipsco==25021 & year>=2008)
+replace network=1 if (fipsco==25013 & year>=1997)
+replace network=1 if (fipsco==25005 & year>=2003)
+replace network=1 if (fipsco==25011 & year>=2012)
+replace network=1 if (fipsco==26023 & year>=2010)
+replace network=1 if (fipsco==26139 & year>=2012 | fipsco==26005 & year>=2012)
+replace network=1 if (fipsco==27027 & year>=2009)
+replace network=1 if (fipsco==27035 & year>=2005)
+replace network=1 if (fipsco==27073 & year>=2010)
+replace network=1 if (fipsco==27171 & year>=2008)
+replace network=1 if (fipsco==27075 & year>=2010 | fipsco==27137 & year>=2010)
+replace network=1 if (fipsco==27063 & year>=2010 | fipsco==27105 & year>=2010)
+replace network=1 if (fipsco==27033 & year>=2004)
+replace network=1 if (fipsco==29037 & year>=2010)
+replace network=1 if (fipsco==29077 & year>=2000)
+replace network=1 if (fipsco==29095 & year>=2007)
+replace network=1 if (fipsco==29195 & year>=2005)
+replace network=1 if (fipsco==37195 & year>=2008)
+replace network=1 if (fipsco==37159 & year>=2008)
+replace network=1 if (fipsco==37119 & year>=2009 | fipsco==37097 & year>=2009)
+replace network=1 if (fipsco==33001 & year>=2011 | fipsco==33005 & year>=2011 | fipsco==33007 & year>=2011 | fipsco==33009 & year>=2011 | fipsco==33011 & year>=2011 | fipsco==33013 & year>=2011 | fipsco==33015 & year>=2011 | fipsco==33019 & year>=2011)
+replace network=1 if (fipsco==32001 & year>=2004)
+replace network=1 if (fipsco==39049 & year>=2010 | fipsco==39089 & year>=2010)
+replace network=1 if (fipsco==39157 & year>=2004)
+replace network=1 if (fipsco==39049 & year>=2010)
+replace network=1 if (fipsco==39103 & year>=2012)
+replace network=1 if (fipsco==40071 & year>=2009 | fipsco==40113 & year>=2009)
+replace network=1 if (fipsco==40135 & year>=2004)
+replace network=1 if (fipsco==41029 & year>=2000)
+replace network=1 if (fipsco==41005 & year>=2011)
+replace network=1 if (fipsco==41053 & year>=2007)
+replace network=1 if (fipsco==41067 & year>=2004)
+replace network=1 if (fipsco==42011 & year>=2002)
+replace network=1 if (fipsco==45075 & year>=2010)
+replace network=1 if (fipsco==46011 & year>=2006)
+replace network=1 if (fipsco==47163 & year>=2005)
+replace network=1 if (fipsco==47125 & year>=2007)
+replace network=1 if (fipsco==47065 & year>=2007)
+replace network=1 if (fipsco==47087 & year>=2004 | fipsco==47113 & year>=2004)
+replace network=1 if (fipsco==47019 & year>=2012 | fipsco==47179 & year>=2012)
+replace network=1 if (fipsco==47063 & year>=2006)
+replace network=1 if (fipsco==47055 & year>=2007)
+replace network=1 if (fipsco==47031 & year>=2007 | fipsco==47051 & year>=2007)
+replace network=1 if (fipsco==49049 & year>=2004 | fipsco==49003 & year>=2004 | fipsco==49011 & year>=2004 | fipsco==49035 & year>=2004)
+replace network=1 if (fipsco==51035 & year>=2009 | fipsco==51077 & year>=2009)
+replace network=1 if (fipsco==51191 & year>=2003)
+replace network=1 if (fipsco==51089 & year>=2009 | fipsco==51690 & year>=2009)
+replace network=1 if (fipsco==51143 & year>=2007 | fipsco==51590 & year>=2007)
+replace network=1 if (fipsco==50007 & year>=2006)
+replace network=1 if (fipsco==50017 & year>=2010)
+replace network=1 if (fipsco==53005 & year>=2001)
+replace network=1 if (fipsco==53007 & year>=2004)
+replace network=1 if (fipsco==53057 & year>=2007)
+replace network=1 if (fipsco==53009 & year>=2002)
+replace network=1 if (fipsco==53017 & year>=1999)
+replace network=1 if (fipsco==53021 & year>=2001)
+replace network=1 if (fipsco==53025 & year>=2000)
+replace network=1 if (fipsco==53027 & year>=1998)
+replace network=1 if (fipsco==53035 & year>=2000)
+replace network=1 if (fipsco==53045 & year>=2000)
+replace network=1 if (fipsco==53047 & year>=2002)
+replace network=1 if (fipsco==53049 & year>=2000)
+replace network=1 if (fipsco==53051 & year>=2001)
+replace network=1 if (fipsco==53033 & year>=2012)
+replace network=1 if (fipsco==55111 & year>=2003)
+replace network=1 if (fipsco==55115 & year>=2008)
+replace network=1 if (fipsco==55025 & year>=1999)
+replace network=1 if (fipsco==54001 & year>=2005)
+replace network=1 if (fipsco==56029 & year>=2007)
+replace network=1 if (fipsco==41065 & year>=2002)
+
+
+***Collapse data by Core Based Statistical Area (CBSA)
+/* Must preserve missing values in county data when collapsing into CBSA-level data to maintain data integrity, e.g. do not want one county’s data standing alone if other counties in the CBSA have missing values */
+*Make sure panel is balanced with seq()
+bysort fipsco year: egen seq = seq()
+foreach v in establishments network white africanamer population unrate bachelors {
+    *Creates column of '0' when data is missing
+    bysort fipsco year: egen c`v' = count(`v') if(`v'==.)
+    *Replaces column of '0' with 1
+    replace c`v' = 1 if(c`v'==0)
+    *Second 'count' variable creates dummy variable indicating if data is missing
+    bysort fipsco year: egen c2`v' = count(c`v')
+    *Egen 'sum' creates copy of variable of interest
+    bysort fipsco year: egen sum`v' = sum(`v')
+    *Creates missing if unbalanced panel
+    replace sum`v' = . if(seq > 1)
+    *Replaces missing data ('.') with large negative integer
+    replace sum`v' = -99999999 if (c2`v'~=0)
+    *Drop extraneous variables and replace column with missing data with a column of true data values and large negative values
+    drop c`v' c2`v' `v'
+    rename sum`v' `v'
+}
+drop seq
+save R:\MPE\county\county_total_90_12.dta, clear
+
+collapse (rawsum) establishments network white africanamer population, by(cbsa year)
+save cbsa1.dta
+
+use R:\MPE\county\county_total_90_12.dta, clear
+collapse (mean) unrate [fweight=laborforce], by(cbsa year)
+save cbsa2.dta
+
+use R:\MPE\county\county_total_90_12.dta, clear 
+*Getting bachelors variable for CBSA dataset
+gen popolder25=age25to64+age65to
+collapse (mean) bachelors [fweight=popolder25], by(cbsa year)
+save cbsa3.dta
+
+use cbsa1.dta, clear
+forval x = 2/3 {
+merge m:m cbsa year using "cbsa`x'.dta"
+rename _merge _merge`x'
+save "cbsa_total.dta", replace
+}
+
+sum network
+*After collapsing data, network needs to be recoded as binary to not double-count cbsa with network
+recode network (2 3 =1)
+save cbsa_total.dta
+
+/*After collapsing, negative values indicate that some values were missing in original dataset,
+so replace negative values with missing values to maintain data integrity */
+foreach v in establishments network white africanamer population unrate bachelors {
+    replace `v' = . if(`v' < 0)
+}
+
+
+***Reshape CBSA data from Bureau of Economic Analysis
+cd R:\MPE\bea_cbsa
+
+*Average Wage Per Job from Bureau of Economic Analysis
+import delimited microavgwagepj.csv, delimiter(comma) varnames(1)
+rename geofips cbsa
+rename geoname cbsaname
+*Micropolitan area indicator
+gen micro=1
+replace micro=0 if micro==.
+*Metropolitan area indicator
+gen metro=0
+save microavgwagepj.dta, replace
+clear
+
+import delimited metroavgwagepj.csv, delimiter(comma) varnames(1)
+rename geofips cbsa
+rename geoname cbsaname
+gen micro=0
+gen metro=1
+replace metro=0 if metro==.
+save metroavgwagepj.dta, replace
+
+append using microavgwagepj.dta
+*Drop US totals
+drop if cbsa==998
+save cbsaavgwagepj.dta, replace
+
+reshape long data, i(cbsa cbsaname) j(year)
+rename data average_wage_pj
+save cbsaavgwagepj2.dta, replace
+
+
+***Compile data into one cbsa-level set
+merge m:m cbsa year using R:\MPE\county\cbsa_total.dta
+sort cbsa year
+save municipal_broadband.dta, replace
+
+gen whitepop=white/population
+gen africanamerpop=africanamer/population
+
+
+***Summary Statistics
+sum 
+gen network_begins=D.network
+*List of CBSA network deployment years
+list cbsaname year if network_begins==1
+
+sum establishments, d
+sum establishments if year==1990, d
+sum establishments if year==2012, d
+hist establishments if year==2012
+sort network
+by network: sum population
+by network: sum population if year==2012
+by network: sum establishments if year==2012
+sum establishments if year==2012 if micro==1
+sum establishments if year==2012 if metro==1
+
+scatter establishments population if year==2012
+scatter establishments  unrate if  year==2012
+scatter establishments average_wage_pj if year==2012
+
+*Create indicator for very large CBSAs, can use to censor sample later
+gen large_cbsa=1 if population>=1000000 & year==2012
+gsort cbsa –year
+by cbsa: carryforward large_cbsa, replace
+replace large_cbsa=0 if large_cbsa==.
+sort cbsa year
+
+
+***Ordinary Least Squares Estimation
+gen lnestablishments=ln(establishments)
+gen lnpopulation=ln(population)
+gen lnavg_wage_pj=ln( average_wage_pj)
+
+reg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate, robust
+reg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate if micro==1, robust
+reg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate if metro==1, robust
+reg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate if large_cbsa==0, robust
+
+
+
+***Difference-in-differences estimation
+xtset cbsa year
+xtreg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate i.year, fe robust
+xtreg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate i.year if micro==1, fe robust
+xtreg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate i.year if metro==1, fe robust
+xtreg lnestablishments network lnpopulation lnavg_wage_pj whitepop africanamerpop unrate i.year if large_cbsa==0, fe robust
+
+*Long-run treatment effect, dummy for every two years since deployment, top-coded at 15 years
+sort cbsa year
+by cbsa: gen network_years=sum(network)
+recode network_years (0=-99) (1 2 =1) (3 4 =3) (5 6 =5) (7 8 =7) (9 10 =9) (11 12 =11) (13 14 =13) (15/35 =15)
+xi i.network_years i.year
+label var _Inetwork_y_2 "First 2 years"
+label var _Inetwork_y_3 "Years 3-4"
+label var _Inetwork_y_4 "Years 5-6"
+label var _Inetwork_y_5 "Years 7-8"
+label var _Inetwork_y_6 "Years 9-10"
+label var _Inetwork_y_7 "Years 11-12"
+label var _Inetwork_y_8 "Years 13-14"
+label var _Inetwork_y_9 "Years 15+"
+xtreg lnestablishments _I* lnpopulation lnavg_wage_pj whitepop africanamerpop unrate, fe robust
+xtreg lnestablishments _I* lnpopulation lnavg_wage_pj whitepop africanamerpop unrate if micro==1, fe robust
+xtreg lnestablishments _I* lnpopulation lnavg_wage_pj whitepop africanamerpop unrate if metro==1, fe robust
