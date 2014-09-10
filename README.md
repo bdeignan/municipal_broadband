@@ -28,6 +28,8 @@ The file "communitybroadband.dta" contains the data in one Stata spreadsheet, "0
 
 Then you can run regression analysis in this order: "1_analysis_establishments.do" then "2_analysis_compensation.do" because the analysis of business establishments generates some indicator variables you may need for the compensation .do file.
 
+The file "sample_complete_Stata_code" is a sample .do file of Stata code that shows the steps involved in the project, from importing and manipulating the raw data all the way to running regressions. The code in this file doesn't correspond to the master data set "communitybroadband.dta", but it does show some of the steps involved in creating the file. Instead, to use this Stata code, you should download annual county .csv files from the BLS (http://www.bls.gov/cew/datatoc.htm) and metropolitan and micropolitan Average Wage Per Job data from the BEA.
+
 There is a lot of data and plenty of regressions and other options to try, so feel free to play around with the data.
 
 User-written programs
