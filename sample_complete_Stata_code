@@ -46,8 +46,6 @@ rename AreaCode fipsco
 rename Year year
 
 *Merge Local Area Unemployment Data
-rename AreaCode fipsco
-rename Year year
 merge m:m fipsco year using R:\MPE\county\LAU\lau90to12.dta
 *Drop some county-equivalent areas in Puerto Rico and undefined areas
 drop if _merge!=3
